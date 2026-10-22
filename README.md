@@ -14,19 +14,19 @@ Training compares generated samples with same-class real positives and (optional
 
 ### 1. Learn a pushforward distribution
 
-Let \(\epsilon\sim p_\epsilon\) be a random input and let \(f_\theta\) be a neural generator. Its output and induced distribution are
+Let $\epsilon\sim p_\epsilon$ be a random input and let $f_\theta$ be a neural generator. Its output and induced distribution are
 
 $$
-x=f_\theta(\epsilon;c,\alpha),\qquad q_\theta(\cdot\mid c,\alpha)=[f_\theta(\cdot;c,\alpha)]_\#p_\epsilon.
+x=f_\theta(\epsilon;c,\alpha),\qquad q_\theta(\cdot\mid c,\alpha)=[f_\theta(\cdot;c,\alpha)]_{\#}p_\epsilon.
 $$
 
-Here \(c\) is an optional class condition, \(\alpha\geq1\) is the training-time guidance condition, and \([f]_\#p\) denotes the distribution obtained by mapping samples from \(p\) through \(f\). The aim is to make the conditional pushforward \(q_\theta\) match the corresponding data distribution \(p_{\rm data}(\cdot\mid c)\).
+Here $c$ is an optional class condition, $\alpha\geq1$ is the training-time guidance condition, and $[f]_{\#}p$ denotes the distribution obtained by mapping samples from $p$ through $f$. The aim is to make the conditional pushforward $q_\theta$ match the corresponding data distribution $p_{\mathrm{data}}(\cdot\mid c)$.
 
-Unlike a diffusion sampler, the model does not repeatedly transform a sample at inference. Instead, optimization changes \(\theta\) over training steps, thereby changing the entire pushforward distribution.
+Unlike a diffusion sampler, the model does not repeatedly transform a sample at inference. Instead, optimization changes $\theta$ over training steps, thereby changing the entire pushforward distribution.
 
 ### 2. Define a field that attracts and repels
 
-For a generated query \(x\), draw a positive \(y^+\sim p\) and a negative \(y^-\sim q\). A similarity kernel \(k(x,y)\) gives more influence to nearby samples. The normalized positive and negative mean-shift vectors are
+For a generated query $x$, draw a positive $y^+\sim p$ and a negative $y^-\sim q$. A similarity kernel $k(x,y)$ gives more influence to nearby samples. The normalized positive and negative mean-shift vectors are
 
 $$
 V_p^+(x)=\frac{\mathbb E_{y^+\sim p}[k(x,y^+)(y^+-x)]}{Z_p(x)},\qquad
@@ -45,29 +45,29 @@ V_{p,q}(x)=V_p^+(x)-V_q^-(x)
 =\frac{\mathbb E_{p,q}\!\left[k(x,y^+)k(x,y^-)(y^+-y^-)\right]}{Z_p(x)Z_q(x)}.
 $$
 
-Swapping the positive and negative distributions reverses the sign, \(V_{p,q}(x)=-V_{q,p}(x)\). In particular, if \(p=q\), then \(V_{p,p}(x)=0\): attraction and repulsion cancel. This establishes the desired equilibrium direction. It does **not** claim that every possible zero-drift field uniquely proves \(p=q\); the paper discusses additional identifiability conditions separately.
+Swapping the positive and negative distributions reverses the sign, $V_{p,q}(x)=-V_{q,p}(x)$. In particular, if $p=q$, then $V_{p,p}(x)=0$: attraction and repulsion cancel. This establishes the desired equilibrium direction. It does **not** claim that every possible zero-drift field uniquely proves $p=q$; the paper discusses additional identifiability conditions separately.
 
 ![A generated query is attracted toward positive data and repelled from generated negatives; the batch kernel makes the weights bilateral.](docs/bilateral-drift.svg)
 
 ### 3. Estimate the field with a bilateral batch kernel
 
-For a feature vector with channel dimension \(C\), let \(d_{ij}=\|\tilde\phi(x_i)-\tilde\phi(y_j)\|_2\). The normalized feature kernel uses temperature \(\tau\):
+For a feature vector with channel dimension $C$, let $d_{ij}=\|\tilde\phi(x_i)-\tilde\phi(y_j)\|_2$. The normalized feature kernel uses temperature $\tau$:
 
 $$
 L_{ij}=-\frac{d_{ij}}{\tau\sqrt C}+\log a_j,
 $$
 
-where \(a_j\) is the candidate's nonnegative sample weight (normally 1; unconditional CFG candidates use weight \(w\)). A zero-weight candidate has logit \(-\infty\). If a generated sample is also a negative, its aligned self-comparison is masked from the logits.
+where $a_j$ is the candidate's nonnegative sample weight (normally 1; unconditional CFG candidates use weight $w$). A zero-weight candidate has logit $-\infty$. If a generated sample is also a negative, its aligned self-comparison is masked from the logits.
 
-The implementation normalizes each logit in both directions. For query index \(i\) and candidate index \(j\),
+The implementation normalizes each logit in both directions. For query index $i$ and candidate index $j$,
 
 $$
-A^{\rm row}_{ij}=\operatorname{softmax}_{j}(L_{ij}),\qquad
-A^{\rm col}_{ij}=\operatorname{softmax}_{i}(L_{ij}),\qquad
-A_{ij}=\sqrt{A^{\rm row}_{ij}A^{\rm col}_{ij}}.
+A^{\mathrm{row}}_{ij}=\mathrm{softmax}_{j}(L_{ij}),\qquad
+A^{\mathrm{col}}_{ij}=\mathrm{softmax}_{i}(L_{ij}),\qquad
+A_{ij}=\sqrt{A^{\mathrm{row}}_{ij}A^{\mathrm{col}}_{ij}}.
 $$
 
-The row softmax distributes each query across candidates; the column softmax also balances how much each candidate is used across the query batch. Their geometric mean is the bilateral affinity. Split \(A\) into positive and negative blocks, \(A^+\) and \(A^-\). For query \(x_i\), the cross-mass weights and finite-batch field are
+The row softmax distributes each query across candidates; the column softmax also balances how much each candidate is used across the query batch. Their geometric mean is the bilateral affinity. Split $A$ into positive and negative blocks, $A^+$ and $A^-$. For query $x_i$, the cross-mass weights and finite-batch field are
 
 $$
 W^+_{ij}=A^+_{ij}\sum_k A^-_{ik},\qquad
@@ -82,32 +82,32 @@ These cross-mass factors preserve the positive/negative exchange symmetry. The i
 
 ### 4. Move predictions toward a detached fixed point
 
-The paper's basic fixed-point target is the current output plus its estimated field. For a feature map \(\phi_j\), define the detached target
+The paper's basic fixed-point target is the current output plus its estimated field. For a feature map $\phi_j$, define the detached target
 
 $$
-t_j(x)=\operatorname{stopgrad}\!\left(\tilde\phi_j(x)+\tilde V_j(x)\right).
+t_j(x)=\mathrm{stopgrad}\!\left(\tilde\phi_j(x)+\tilde V_j(x)\right).
 $$
 
 The multi-feature objective is
 
 $$
-\mathcal L(\theta)=\sum_j\operatorname{MSE}\!\left(\tilde\phi_j(f_\theta(\epsilon)),\ t_j(f_\theta(\epsilon))\right).
+\mathcal L(\theta)=\sum_j\mathrm{MSE}\!\left(\tilde\phi_j(f_\theta(\epsilon)),\ t_j(f_\theta(\epsilon))\right).
 $$
 
 The target is held fixed during backpropagation. Consequently the kernel, pairwise distances, and drift are not differentiated through; gradients flow through the prediction branch and the feature operations back to the generated sample and generator parameters. The feature encoder's parameters stay frozen, but its input Jacobian is retained. Numerically, each MSE term equals the mean squared normalized drift for that batch; its **gradient** is the fixed-target regression gradient, not the derivative of a differentiable kernel objective.
 
 ### 5. Normalize feature scales and combine temperatures
 
-Different feature stages can have very different magnitudes and channel counts. For feature group \(j\) with \(C_j\) channels, the paper sets a scalar feature scale so the expected normalized pair distance is on the order of \(\sqrt{C_j}\):
+Different feature stages can have very different magnitudes and channel counts. For feature group $j$ with $C_j$ channels, the paper sets a scalar feature scale so the expected normalized pair distance is on the order of $\sqrt{C_j}$:
 
 $$
 S_j=\frac{1}{\sqrt{C_j}}\,\mathbb E_{x,y}\left[\|\phi_j(x)-\phi_j(y)\|_2\right],\qquad
 \tilde\phi_j(x)=\frac{\phi_j(x)}{S_j}.
 $$
 
-The code estimates the expectation over the current batch, weights unconditional examples by their CFG weight, and smooths the estimate with the configured exponential moving average \(S_j^{(t)}=\rho S_j^{(t-1)}+(1-\rho)S_{j,\rm batch}\). Its kernel denominator is therefore \(\tau\sqrt{C_j}\), matching the paper's dimension-normalized temperature.
+The code estimates the expectation over the current batch, weights unconditional examples by their CFG weight, and smooths the estimate with the configured exponential moving average $S_j^{(t)}=\rho S_j^{(t-1)}+(1-\rho)S_{j,\mathrm{batch}}$. Its kernel denominator is therefore $\tau\sqrt{C_j}$, matching the paper's dimension-normalized temperature.
 
-For a raw per-temperature field \(V_{j,\tau}\), define
+For a raw per-temperature field $V_{j,\tau}$, define
 
 $$
 \lambda_{j,\tau}=\sqrt{\mathbb E\!\left[\frac{\|V_{j,\tau}\|_2^2}{C_j}\right]},\qquad
@@ -123,24 +123,24 @@ $$
 
 ### 6. Classifier-free guidance as a negative-mixture weight
 
-For a class \(c\), the desired effective negative distribution is a mixture of same-class generated samples and real unconditional samples:
+For a class $c$, the desired effective negative distribution is a mixture of same-class generated samples and real unconditional samples:
 
 $$
-\tilde q(\cdot\mid c)=(1-\gamma)q_\theta(\cdot\mid c)+\gamma p_{\rm data}(\cdot\mid\varnothing),\qquad
+\tilde q(\cdot\mid c)=(1-\gamma)q_\theta(\cdot\mid c)+\gamma p_{\mathrm{data}}(\cdot\mid\varnothing),\qquad
 \alpha=\frac{1}{1-\gamma}.
 $$
 
-The paper's target relation is \(q_\theta=\alpha p_{\rm data}(\cdot\mid c)-(\alpha-1)p_{\rm data}(\cdot\mid\varnothing)\). In a finite batch, each generated query excludes itself, leaving \(N_{\rm neg}-1\) generated negatives. If there are \(N_{\rm unc}\) unconditional negatives and each receives kernel weight \(w\), matching the desired mixture gives
+The paper's target relation is $q_\theta=\alpha p_{\mathrm{data}}(\cdot\mid c)-(\alpha-1)p_{\mathrm{data}}(\cdot\mid\varnothing)$. In a finite batch, each generated query excludes itself, leaving $N_{\mathrm{neg}}-1$ generated negatives. If there are $N_{\mathrm{unc}}$ unconditional negatives and each receives kernel weight $w$, matching the desired mixture gives
 
 $$
-\alpha=1+\frac{N_{\rm unc}w}{N_{\rm neg}-1}
+\alpha=1+\frac{N_{\mathrm{unc}}w}{N_{\mathrm{neg}}-1}
 \quad\Longrightarrow\quad
-w=\frac{(\alpha-1)(N_{\rm neg}-1)}{N_{\rm unc}}.
+w=\frac{(\alpha-1)(N_{\mathrm{neg}}-1)}{N_{\mathrm{unc}}}.
 $$
 
-For example, \(N_{\rm neg}=64\), \(N_{\rm unc}=16\), and \(\alpha=2\) imply \(w=63/16\). The same weight is used for the unconditional candidates in the kernel and feature-distance normalization. The class label and \(\alpha\) are both inputs to the generator; changing \(\alpha\) at inference does not require a second conditional/unconditional forward pass.
+For example, $N_{\mathrm{neg}}=64$, $N_{\mathrm{unc}}=16$, and $\alpha=2$ imply $w=63/16$. The same weight is used for the unconditional candidates in the kernel and feature-distance normalization. The class label and $\alpha$ are both inputs to the generator; changing $\alpha$ at inference does not require a second conditional/unconditional forward pass.
 
-The configurable `power` sampler draws from a truncated density proportional to \(\alpha^{-p}\) on `[alpha_min, alpha_max]` (with a log-uniform special case for \(p=1\)). Configurations may instead request uniform sampling or the fixed value \(\alpha=1\).
+The configurable `power` sampler draws from a truncated density proportional to $\alpha^{-p}$ on `[alpha_min, alpha_max]` (with a log-uniform special case for $p=1$). Configurations may instead request uniform sampling or the fixed value $\alpha=1$.
 
 ![The CFG strength determines the unconditional negative weight while preserving the desired batch mixture.](docs/cfg-mixture.svg)
 
@@ -151,37 +151,37 @@ The latent-MAE encoder is a GroupNorm ResNet-style network. It emits multiscale 
 - every spatial location;
 - per-channel global mean and standard deviation;
 - per-channel means and standard deviations pooled over 2×2 and 4×4 regions;
-- the input's per-channel mean-square statistic, \(\mathbb E_{h,w}[x^2]\).
+- the input's per-channel mean-square statistic, $\mathbb E_{h,w}[x^2]$.
 
 Each group gets its own feature normalization, bilateral kernel, per-temperature field, and MSE term. The pixel adapter first converts each 8×8 RGB patch to a 192-dimensional vector on a 32×32 grid, so the same ResNet-style encoder can operate at that grid. The generator objective can also be used with other mappings that return `[batch, descriptors, channels]` feature tensors. The current default trainer uses these descriptor groups; it does not add a separate identity/raw-output feature group in addition to them.
 
 For MAE pretraining, the implemented reconstruction objective is masked-region squared error:
 
 $$
-\mathcal L_{\rm MAE}=\frac{\sum_{b,c,h,w}m_{b,h,w}(\hat x_{b,c,h,w}-x_{b,c,h,w})^2}
+\mathcal L_{\mathrm{MAE}}=\frac{\sum_{b,c,h,w}m_{b,h,w}(\hat x_{b,c,h,w}-x_{b,c,h,w})^2}
 {C\sum_{b,h,w}m_{b,h,w}},
 $$
 
-where \(m\) selects masked patches. Classifier fine-tuning uses \(\mathcal L_{\rm ft}=(1-\lambda)\mathcal L_{\rm recon}+\lambda\mathcal L_{\rm cls}\); \(\lambda\) warms up from 0 to 0.1 and is then held at 0.1 by the default recipe.
+where $m$ selects masked patches. Classifier fine-tuning uses $\mathcal L_{\mathrm{ft}}=(1-\lambda)\mathcal L_{\mathrm{recon}}+\lambda\mathcal L_{\mathrm{cls}}$; $\lambda$ warms up from 0 to 0.1 and is then held at 0.1 by the default recipe.
 
 ## What one training update does
 
 For each class group, the training loop follows this sequence:
 
-1. Sample a class \(c\), a guidance value \(\alpha\), and Gaussian input noise \(\epsilon\) (plus optional discrete style codes).
-2. Draw \(N_{\rm pos}\) real positives from class \(c\), and optionally \(N_{\rm unc}\) real examples for unconditional negatives.
-3. Evaluate \(x=f_\theta(\epsilon;c,\alpha)\). Generated samples are also the conditional negative set; each query's aligned self-negative is excluded.
-4. Extract features for generated, positive, and unconditional samples. Freeze feature-encoder weights while preserving gradients from generated features to \(x\).
+1. Sample a class $c$, a guidance value $\alpha$, and Gaussian input noise $\epsilon$ (plus optional discrete style codes).
+2. Draw $N_{\mathrm{pos}}$ real positives from class $c$, and optionally $N_{\mathrm{unc}}$ real examples for unconditional negatives.
+3. Evaluate $x=f_\theta(\epsilon;c,\alpha)$. Generated samples are also the conditional negative set; each query's aligned self-negative is excluded.
+4. Extract features for generated, positive, and unconditional samples. Freeze feature-encoder weights while preserving gradients from generated features to $x$.
 5. Estimate per-feature bilateral drifts at each configured temperature, normalize them, and form the detached targets.
-6. Sum feature MSE terms, backpropagate, clip gradients, and update \(\theta\). Update configured EMA copies after optimizer steps.
+6. Sum feature MSE terms, backpropagate, clip gradients, and update $\theta$. Update configured EMA copies after optimizer steps.
 
 The effective generated batch per optimizer update is
 
 $$
-B_{\rm generated}=N_c\,N_{\rm neg}\,N_{\rm accum},
+B_{\mathrm{generated}}=N_c\,N_{\mathrm{neg}}\,N_{\mathrm{accum}},
 $$
 
-where \(N_c\) is the configured global class allocation, \(N_{\rm neg}\) generated samples are used per class per microbatch, and \(N_{\rm accum}\) is gradient accumulation. Positive examples are grouped by class and need not be paired with a generated sample.
+where $N_c$ is the configured global class allocation, $N_{\mathrm{neg}}$ generated samples are used per class per microbatch, and $N_{\mathrm{accum}}$ is gradient accumulation. Positive examples are grouped by class and need not be paired with a generated sample.
 
 ## Generator and inference path
 
@@ -193,7 +193,7 @@ $$
 
 The reference latent route uses a 32×32×4 SD-VAE latent and a DiT/2 patch embed, producing 16×16 = 256 spatial tokens. Pixel variants use 256×256×3 tensors and DiT/16, also producing 256 spatial tokens. Configurable variants use RMSNorm, QK normalization, SwiGLU, 2D RoPE, adaLN-Zero conditioning, and 16 learned register tokens. The optional style-noise path samples 32 codebook indices and adds their scaled embedding sum to the condition vector; these codes do not increase sequence length.
 
-At inference, draw one \(\epsilon\), supply \((c,\alpha)\), and evaluate the generator once. For latent generation, decode the resulting latent with the configured VAE to obtain RGB. The feature encoder, bilateral kernel, optimizer, queues, and training targets are not required by the deployment artifact.
+At inference, draw one $\epsilon$, supply $(c,\alpha)$, and evaluate the generator once. For latent generation, decode the resulting latent with the configured VAE to obtain RGB. The feature encoder, bilateral kernel, optimizer, queues, and training targets are not required by the deployment artifact.
 
 ## Install
 
