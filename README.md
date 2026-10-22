@@ -17,10 +17,10 @@ Training compares generated samples with same-class real positives and (optional
 Let $\epsilon\sim p_\epsilon$ be a random input and let $f_\theta$ be a neural generator. Its output and induced distribution are
 
 $$
-x=f_\theta(\epsilon;c,\alpha),\qquad q_\theta(\cdot\mid c,\alpha)=[f_\theta(\cdot;c,\alpha)]_p_\epsilon.
+x = f_\theta(\epsilon; c, \alpha), \qquad q_\theta(\cdot \mid c, \alpha) = [f_\theta(\cdot; c, \alpha)]_{\sharp} p_\epsilon
 $$
 
-Here $c$ is an optional class condition, $\alpha\geq1$ is the training-time guidance condition, and $[f]_{\#}p$ denotes the distribution obtained by mapping samples from $p$ through $f$. The aim is to make the conditional pushforward $q_\theta$ match the corresponding data distribution $p_{\mathrm{data}}(\cdot\mid c)$.
+Here $`c`$ is an optional class condition, $`\alpha \geq 1`$ is the training-time guidance condition, and $`[f]_{\sharp}p`$ denotes the distribution obtained by mapping samples from $`p`$ through $`f`$. The aim is to make the conditional pushforward $`q_\theta`$ match the corresponding data distribution $`p_{\mathrm{data}}(\cdot \mid c)`$.
 
 Unlike a diffusion sampler, the model does not repeatedly transform a sample at inference. Instead, optimization changes $\theta$ over training steps, thereby changing the entire pushforward distribution.
 
