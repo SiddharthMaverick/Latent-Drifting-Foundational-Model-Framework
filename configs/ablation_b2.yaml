@@ -1,0 +1,49 @@
+experiment:
+  name: drifting-imagenet-b2-ablation
+  seed: 0
+  output_dir: runs/ablation-b2
+  config_version: 1
+data:
+  root: data/imagenet/train
+  num_classes: 1000
+  image_size: 256
+  latent_cache: data/imagenet-latents
+  workers: 8
+mae:
+  input_channels: 4
+  base_width: 256
+  pretrain_epochs: 192
+generator:
+  variant: B/2
+  input_channels: 4
+  image_size: 32
+  patch_size: 2
+  hidden_dim: 768
+  depth: 12
+  num_heads: 12
+  num_classes: 1000
+  register_tokens: 16
+  style_tokens: 32
+drift:
+  temperatures: [0.02, 0.05, 0.2]
+  chunk_size: 1024
+cfg:
+  alpha_min: 1.0
+  alpha_max: 4.0
+  sampler: power
+  power: 3.0
+  num_unconditional: 16
+batch:
+  classes: 64
+  positives: 64
+  negatives: 64
+  local_size: 64
+optimization:
+  learning_rate: 0.0002
+  weight_decay: 0.01
+  warmup_steps: 5000
+  total_steps: 30000
+  precision: bf16
+distributed:
+  backend: nccl
+  strategy: ddp

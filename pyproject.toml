@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "latent-drifting"
+version = "0.1.0"
+description = "Research and production tooling for one-step drifting generative models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Latent Drifting Framework Contributors" }]
+dependencies = [
+  "torch>=2.4",
+  "numpy>=1.26",
+  "Pillow>=10.0",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+vae = ["diffusers>=0.30", "safetensors>=0.4"]
+metrics = ["torchvision>=0.19", "scipy>=1.11"]
+distributed = ["tensorboard>=2.17"]
+export = ["onnx>=1.16"]
+dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.11"]
+
+[project.scripts]
+latent-drifting = "latent_drifting.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+

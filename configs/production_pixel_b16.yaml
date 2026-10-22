@@ -1,0 +1,49 @@
+experiment:
+  name: drifting-imagenet-pixel-b16
+  seed: 0
+  output_dir: runs/production-pixel-b16
+  config_version: 1
+data:
+  root: data/imagenet/train
+  num_classes: 1000
+  image_size: 256
+  latent_cache: data/imagenet-latents
+  workers: 12
+mae:
+  input_channels: 192
+  base_width: 640
+  pretrain_epochs: 1280
+generator:
+  variant: B/16
+  input_channels: 3
+  image_size: 256
+  patch_size: 16
+  hidden_dim: 768
+  depth: 12
+  num_heads: 12
+  num_classes: 1000
+  register_tokens: 16
+  style_tokens: 32
+drift:
+  temperatures: [0.02, 0.05, 0.2]
+  chunk_size: 1024
+cfg:
+  alpha_min: 1.0
+  alpha_max: 4.0
+  sampler: power
+  power: 5.0
+  num_unconditional: 32
+batch:
+  classes: 128
+  positives: 128
+  negatives: 64
+  local_size: 64
+optimization:
+  learning_rate: 0.0002
+  weight_decay: 0.01
+  warmup_steps: 10000
+  total_steps: 100000
+  precision: bf16
+distributed:
+  backend: nccl
+  strategy: ddp
