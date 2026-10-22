@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="790" viewBox="0 0 1500 790" role="img" aria-labelledby="title desc">
+  <title id="title">Drifting model training and inference flow</title>
+  <desc id="desc">Training uses generated samples, real same-class positives and optional unconditional negatives. A frozen feature encoder feeds a bilateral drift field and a detached fixed-point loss that updates the generator. Inference uses one generator forward pass and optional VAE decoding.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .title { font: 700 29px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 16px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .section { font: 700 14px 'Segoe UI', Arial, sans-serif; letter-spacing: 1.4px; fill: #334155; }
+      .head { font: 700 17px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .body { font: 15px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .math { font: 16px Georgia, 'Times New Roman', serif; fill: #0f172a; }
+      .small { font: 13px 'Segoe UI', Arial, sans-serif; fill: #64748b; }
+      .card { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+    </style>
+  </defs>
+  <rect width="1500" height="790" fill="#ffffff"/>
+  <text x="42" y="48" class="title">How a Drifting Model learns — and samples</text>
+  <text x="42" y="74" class="subtitle">The field is a training signal. The deployed generator is a direct noise-to-sample map.</text>
+
+  <rect x="28" y="96" width="1444" height="354" rx="18" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="48" y="122" class="section">TRAINING · FIELD AND FEATURE ENCODER ARE ACTIVE</text>
+
+  <rect x="48" y="143" width="244" height="205" rx="13" class="card"/>
+  <rect x="48" y="143" width="244" height="7" rx="4" fill="#8b5cf6"/>
+  <text x="66" y="179" class="head">1 · Sample a batch</text>
+  <text x="66" y="211" class="math">ε ∼ pε, class c, strength α</text>
+  <text x="66" y="246" class="math">y⁺ ∼ pdata(· | c)</text>
+  <text x="66" y="277" class="math">y⁰ ∼ pdata(· | ∅)</text>
+  <text x="66" y="319" class="small">Optional real negatives for CFG;</text>
+  <text x="66" y="337" class="small">no one-to-one sample pairing.</text>
+
+  <rect x="338" y="143" width="244" height="205" rx="13" class="card"/>
+  <rect x="338" y="143" width="244" height="7" rx="4" fill="#0ea5e9"/>
+  <text x="356" y="179" class="head">2 · Generate</text>
+  <text x="356" y="223" class="math">x = fθ(ε; c, α)</text>
+  <text x="356" y="258" class="body">One direct network evaluation</text>
+  <text x="356" y="285" class="body">per generated sample.</text>
+  <text x="356" y="324" class="small">The current generated batch also</text>
+  <text x="356" y="342" class="small">supplies conditional negatives.</text>
+
+  <rect x="628" y="143" width="244" height="205" rx="13" class="card"/>
+  <rect x="628" y="143" width="244" height="7" rx="4" fill="#10b981"/>
+  <text x="646" y="179" class="head">3 · Extract features</text>
+  <text x="646" y="218" class="math">φ(x), φ(y⁺), φ(y⁰)</text>
+  <text x="646" y="253" class="body">Multi-scale ResNet-MAE</text>
+  <text x="646" y="280" class="body">with frozen weights.</text>
+  <text x="646" y="319" class="small">Encoder weights frozen; gradients</text>
+  <text x="646" y="337" class="small">flow from features back to x.</text>
+
+  <rect x="918" y="143" width="244" height="205" rx="13" class="card"/>
+  <rect x="918" y="143" width="244" height="7" rx="4" fill="#f59e0b"/>
+  <text x="936" y="179" class="head">4 · Estimate the field</text>
+  <text x="936" y="219" class="math">Lᵢⱼ = −dᵢⱼ/τ̃ + log aⱼ</text>
+  <text x="936" y="250" class="math">A = √(Aᵣ · A꜀)</text>
+  <text x="936" y="284" class="math">V = attraction − repulsion</text>
+  <text x="936" y="326" class="small">Generated self-negatives are masked.</text>
+
+  <rect x="1208" y="143" width="244" height="205" rx="13" class="card"/>
+  <rect x="1208" y="143" width="244" height="7" rx="4" fill="#ef4444"/>
+  <text x="1226" y="179" class="head">5 · Update the model</text>
+  <text x="1226" y="219" class="math">target = sg[φ(x) + Ṽ]</text>
+  <text x="1226" y="254" class="math">L = MSE(φ(x), target)</text>
+  <text x="1226" y="289" class="body">Backpropagate and update θ.</text>
+  <text x="1226" y="326" class="small">EMA is updated after optimizer steps.</text>
+
+  <path d="M292 245 H329" fill="none" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+  <path d="M582 245 H619" fill="none" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+  <path d="M872 245 H909" fill="none" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+  <path d="M1162 245 H1199" fill="none" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+  <path d="M170 348 V392 H750 V355" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrowBlue)"/>
+  <text x="362" y="386" class="small" fill="#2563eb">real samples feed the feature encoder directly</text>
+
+  <rect x="28" y="476" width="1444" height="277" rx="18" fill="#f8fafc" stroke="#cbd5e1" stroke-dasharray="8 6"/>
+  <text x="48" y="507" class="section">INFERENCE · TRAINING-ONLY COMPONENTS REMOVED</text>
+
+  <rect x="90" y="551" width="225" height="115" rx="13" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="112" y="585" class="head">Draw noise</text>
+  <text x="112" y="620" class="math">ε, class c, strength α</text>
+
+  <rect x="397" y="551" width="250" height="115" rx="13" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.8"/>
+  <text x="421" y="585" class="head">Generator fθ</text>
+  <text x="421" y="620" class="math">one forward pass</text>
+
+  <rect x="730" y="551" width="250" height="115" rx="13" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="754" y="585" class="head">Generated output x</text>
+  <text x="754" y="620" class="body">latent tensor or RGB image</text>
+
+  <rect x="1063" y="551" width="320" height="115" rx="13" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="1087" y="585" class="head">Optional SD-VAE decode</text>
+  <text x="1087" y="620" class="body">latent → 256 × 256 RGB</text>
+
+  <path d="M315 609 H388" fill="none" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+  <path d="M647 609 H721" fill="none" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+  <path d="M980 609 H1054" fill="none" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+  <text x="90" y="711" class="small">For pixel-space models, x is already an image and the VAE decoder is skipped. No feature model, kernel, queue, or iterative solver is called here.</text>
+</svg>

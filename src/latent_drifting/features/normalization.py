@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 
 import torch
@@ -38,7 +39,7 @@ class FeatureNormalizer:
             weighted_sum = weighted_sum + torch.cdist(x, y).mean() * weight * source.shape[0]
             total_mass += weight * source.shape[0]
         distances = weighted_sum / max(total_mass, 1e-12)
-        current = (distances / channels).clamp_min(self.eps).detach()
+        current = (distances / math.sqrt(channels)).clamp_min(self.eps).detach()
         previous = self.scales.get(name)
         updated = current if previous is None else self.momentum * previous.to(current) + (1 - self.momentum) * current
         self.scales[name] = updated.detach()

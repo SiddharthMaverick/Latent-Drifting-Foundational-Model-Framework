@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="650" viewBox="0 0 1500 650" role="img" aria-labelledby="title desc">
+  <title id="title">Bilateral kernel drift from positive and negative samples</title>
+  <desc id="desc">A generated feature query is attracted to positive data and repelled from generated negatives. A pairwise-logit matrix is normalized over candidate and query axes, combined by a geometric mean, and used to calculate the anti-symmetric drift.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+    <marker id="blueArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+    <marker id="orangeArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>
+    <style>
+      .title { font: 700 29px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 16px 'Segoe UI', Arial, sans-serif; fill: #475569; }
+      .head { font: 700 18px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .body { font: 15px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .small { font: 13px 'Segoe UI', Arial, sans-serif; fill: #64748b; }
+      .math { font: 17px Georgia, 'Times New Roman', serif; fill: #0f172a; }
+    </style>
+  </defs>
+  <rect width="1500" height="650" fill="#ffffff"/>
+  <text x="42" y="48" class="title">Bilateral drift: attract data, repel generated samples</text>
+  <text x="42" y="75" class="subtitle">The same balanced affinity is used on both sides, which preserves the positive/negative exchange symmetry.</text>
+
+  <rect x="34" y="102" width="440" height="510" rx="17" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="58" y="138" class="head">A · Geometric interpretation</text>
+  <text x="58" y="165" class="small">Illustrative feature-space points; not empirical samples</text>
+
+  <line x1="115" y1="346" x2="279" y2="244" stroke="#2563eb" stroke-width="3" marker-end="url(#blueArrow)"/>
+  <line x1="270" y1="414" x2="130" y2="365" stroke="#ea580c" stroke-width="3" marker-end="url(#orangeArrow)"/>
+  <line x1="115" y1="346" x2="150" y2="358" stroke="#334155" stroke-width="2" stroke-dasharray="5 5"/>
+
+  <circle cx="96" cy="342" r="12" fill="#111827"/>
+  <text x="56" y="322" class="math">query xᵢ</text>
+  <circle cx="295" cy="229" r="10" fill="#3b82f6"/><circle cx="329" cy="247" r="9" fill="#60a5fa"/><circle cx="278" cy="274" r="8" fill="#93c5fd"/><circle cx="350" cy="212" r="8" fill="#60a5fa"/>
+  <text x="273" y="190" class="body" fill="#1d4ed8">positive data y⁺</text>
+  <circle cx="293" cy="415" r="10" fill="#f97316"/><circle cx="334" cy="399" r="9" fill="#fb923c"/><circle cx="270" cy="445" r="8" fill="#fdba74"/><circle cx="353" cy="433" r="8" fill="#fb923c"/>
+  <text x="273" y="482" class="body" fill="#c2410c">generated negatives y⁻</text>
+  <text x="116" y="242" class="math" fill="#1d4ed8">V⁺</text>
+  <text x="190" y="402" class="math" fill="#c2410c">−V⁻</text>
+  <rect x="61" y="520" width="385" height="63" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="80" y="547" class="math">V(x) = V⁺(x) − V⁻(x)</text>
+  <text x="80" y="570" class="small">If p = q, the two contributions cancel.</text>
+
+  <rect x="502" y="102" width="964" height="510" rx="17" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="530" y="138" class="head">B · Finite-batch bilateral kernel</text>
+  <text x="530" y="172" class="math">Lᵢⱼ = −‖φ̃(xᵢ) − φ̃(yⱼ)‖₂ / (τ√C) + log aⱼ</text>
+  <text x="530" y="202" class="small">aⱼ = 1 for ordinary samples; aⱼ = w for unconditional CFG negatives</text>
+
+  <text x="573" y="252" class="small">generated queries xᵢ ↓</text>
+  <text x="804" y="252" class="small">positive candidates y⁺</text>
+  <text x="1085" y="252" class="small">negative candidates y⁻</text>
+
+  <rect x="588" y="269" width="170" height="115" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <rect x="758" y="269" width="123" height="115" fill="#dbeafe" stroke="#ffffff"/>
+  <rect x="881" y="269" width="123" height="115" fill="#93c5fd" stroke="#ffffff"/>
+  <rect x="1004" y="269" width="123" height="115" fill="#bfdbfe" stroke="#ffffff"/>
+  <rect x="1127" y="269" width="123" height="115" fill="#fed7aa" stroke="#ffffff"/>
+  <rect x="1250" y="269" width="123" height="115" fill="#fdba74" stroke="#ffffff"/>
+  <rect x="1373" y="269" width="62" height="115" fill="#ffedd5" stroke="#ffffff"/>
+  <text x="603" y="296" class="small">q₁</text><text x="603" y="333" class="small">q₂</text><text x="603" y="370" class="small">q₃ …</text>
+  <text x="786" y="331" class="math">A⁺</text><text x="1154" y="331" class="math">A⁻</text>
+  <line x1="758" y1="395" x2="1432" y2="395" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="888" y="420" class="small">softmax across candidate columns (row normalization)</text>
+  <line x1="566" y1="268" x2="566" y2="386" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="530" y="407" class="small">softmax down query rows (column normalization)</text>
+
+  <rect x="530" y="438" width="422" height="70" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="551" y="466" class="math">Aᵣ = softmaxᵧ(L),  A꜀ = softmaxₓ(L)</text>
+  <text x="551" y="492" class="math">A = √(Aᵣ ⊙ A꜀)</text>
+  <rect x="973" y="438" width="462" height="70" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="994" y="466" class="math">W⁺ᵢⱼ = A⁺ᵢⱼ Σₖ A⁻ᵢₖ</text>
+  <text x="994" y="492" class="math">W⁻ᵢₖ = A⁻ᵢₖ Σⱼ A⁺ᵢⱼ</text>
+  <rect x="530" y="526" width="905" height="59" rx="10" fill="#eff6ff" stroke="#93c5fd"/>
+  <text x="551" y="562" class="math">Vᵢ = Σⱼ W⁺ᵢⱼ φ̃(y⁺ⱼ) − Σₖ W⁻ᵢₖ φ̃(y⁻ₖ)     ·     mask xᵢ's aligned generated self-negative</text>
+</svg>

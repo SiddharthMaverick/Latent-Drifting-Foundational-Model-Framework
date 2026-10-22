@@ -70,7 +70,7 @@ def bilateral_drift(
     )
     candidate_log_weights = torch.cat((pos_log_weights, neg_log_weights))
     candidates = torch.cat((pos_m, neg_m), dim=1)
-    temperature_scaled = temperature * channels
+    temperature_scaled = temperature * math.sqrt(channels)
     descriptor_chunk = max(1, min(descriptor_count, chunk_size // max(query_count, 1)))
     result = torch.empty_like(x_m)
 
@@ -132,7 +132,7 @@ def bilateral_affinity(
     x_m = _prepare_features(x)
     y_m = _prepare_features(candidates)
     distances = pairwise_l2(x_m, y_m)
-    logits = -distances / (temperature * x.shape[-1])
+    logits = -distances / (temperature * math.sqrt(x.shape[-1]))
     log_affinity = 0.5 * (
         torch.log_softmax(logits, dim=-1) + torch.log_softmax(logits, dim=-2)
     )

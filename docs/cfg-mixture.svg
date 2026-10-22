@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="430" viewBox="0 0 1300 430" role="img" aria-labelledby="title desc">
+  <title id="title">Classifier-free guidance as negative-mixture weighting</title>
+  <desc id="desc">The CFG strength alpha sets the unconditional mixing fraction gamma. Given a finite number of generated and unconditional negatives, the per-unconditional-sample kernel weight is w equals alpha minus one times generated negatives minus one divided by unconditional sample count. An example with alpha two has equal effective masses.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+    <style>
+      .title { font: 700 28px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .head { font: 700 18px 'Segoe UI', Arial, sans-serif; fill: #0f172a; }
+      .body { font: 15px 'Segoe UI', Arial, sans-serif; fill: #334155; }
+      .small { font: 13px 'Segoe UI', Arial, sans-serif; fill: #64748b; }
+      .math { font: 19px Georgia, 'Times New Roman', serif; fill: #0f172a; }
+    </style>
+  </defs>
+  <rect width="1300" height="430" fill="#ffffff"/>
+  <text x="40" y="49" class="title">CFG changes the negative mixture — without extra inference passes</text>
+
+  <rect x="40" y="82" width="500" height="292" rx="16" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="66" y="119" class="head">1 · Desired distribution</text>
+  <text x="66" y="158" class="math">q̃(· | c) = (1 − γ) qθ(· | c)</text>
+  <text x="66" y="185" class="math">          + γ pdata(· | ∅)</text>
+  <text x="66" y="222" class="math">α = 1 / (1 − γ)</text>
+  <text x="66" y="251" class="body">α = 1 gives γ = 0 (no unconditional mixture).</text>
+  <text x="66" y="279" class="body">Larger α increases the effective weight of</text>
+  <text x="66" y="302" class="body">unconditional real negatives during training.</text>
+  <text x="66" y="346" class="small">The model receives c and α as conditions.</text>
+
+  <line x1="565" y1="224" x2="620" y2="224" stroke="#64748b" stroke-width="2.4" marker-end="url(#arrow)"/>
+
+  <rect x="645" y="82" width="615" height="292" rx="16" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="671" y="119" class="head">2 · Match finite-batch negative mass</text>
+  <text x="671" y="160" class="math">w = (α − 1)(Nneg − 1) / Nunc</text>
+  <text x="671" y="191" class="small">Per unconditional sample; generated self-match is excluded.</text>
+
+  <text x="671" y="235" class="body">Example: Nneg = 64, Nunc = 16, α = 2 → w = 63/16</text>
+  <rect x="671" y="255" width="540" height="40" rx="7" fill="#e2e8f0"/>
+  <path d="M678 255 H941 V295 H678 Q671 295 671 288 V262 Q671 255 678 255 Z" fill="#3b82f6"/>
+  <path d="M941 255 H1204 Q1211 255 1211 262 V288 Q1211 295 1204 295 H941 Z" fill="#f97316"/>
+  <text x="738" y="281" class="body" fill="#ffffff">63 generated-negative units</text>
+  <text x="971" y="281" class="body" fill="#ffffff">16 × w = 63 unconditional units</text>
+  <text x="671" y="329" class="small">The equal masses yield γ = 1/2 in this example; all weights are applied in the</text>
+  <text x="671" y="349" class="small">kernel normalization. α is embedded into the same single generator call.</text>
+</svg>
